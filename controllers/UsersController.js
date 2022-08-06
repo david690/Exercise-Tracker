@@ -45,7 +45,6 @@ exports.addExercise = (req, res) => {
   }
 
   newExercise.save().then(exerciseData => {
-    console.log(exerciseData)
     User.findById(req.params._id).then(userData => {
       res.json({ _id: userData._id, username: userData.username, date: exerciseData.date.toDateString(), duration: exerciseData.duration, description: exerciseData.description });
     }).catch(error => {
@@ -59,42 +58,38 @@ exports.addExercise = (req, res) => {
 }
 
 exports.getExerciseLogs = (req, res) => {
-  if (req.query.from && req.query.to && req.query.limit) {
-    console.log("-------------------")
+  if (req.query.from || req.query.to) {
     User.findById(req.params._id).then(userData => {
-      Exercise.find({ userid: req.params._id, date: { $gte: new Date(req.query.from), $lte: new Date(req.query.to) } }, {}, { limit: req.query.limit }).then(exerciseData => {
+      Exercise.find({ userid: req.params._id, date: { $gte: new Date(req.query.from.replaceAll("-", "/")), $lte: new Date(req.query.to.replaceAll("-", "/")) } }, {}, { limit: req.query.limit ? req.query.limit : null }).then(exerciseData => {
         let results = [];
 
         for (let value in exerciseData) {
           results.push({ description: exerciseData[value].description, duration: exerciseData[value].duration, date: exerciseData[value].date.toDateString() });
         }
-        res.json({ _id: userData._id, username: userData.username, count: parseInt(req.query.limit), log: results });
+        res.json({ _id: userData._id, username: userData.username, count: exerciseData.length, log: results });
       }).catch(error => {
         console.log("error:", error);
         res.json({ error });
       });
+
     }).catch(error => {
       console.log("error:", error);
       res.json({ error });
     });
   } else {
     User.findById(req.params._id).then(userData => {
-      Exercise.countDocuments({ userid: req.params._id }).then(logCount => {
-        Exercise.find({ userid: req.params._id }).then(exerciseData => {
-          let results = [];
+      Exercise.find({ userid: req.params._id }, {}, { limit: req.query.limit ? req.query.limit : null }).then(exerciseData => {
+        let results = [];
 
-          for (let value in exerciseData) {
-            results.push({ description: exerciseData[value].description, duration: exerciseData[value].duration, date: exerciseData[value].date.toDateString() });
-          }
-          res.json({ _id: userData._id, username: userData.username, count: logCount, log: results });
-        }).catch(error => {
-          console.log("error:", error);
-          res.json({ error });
-        });
+        for (let value in exerciseData) {
+          results.push({ description: exerciseData[value].description, duration: exerciseData[value].duration, date: exerciseData[value].date.toDateString() });
+        }
+        res.json({ _id: userData._id, username: userData.username, count: exerciseData.length, log: results });
       }).catch(error => {
         console.log("error:", error);
         res.json({ error });
       });
+
     }).catch(error => {
       console.log("error:", error);
       res.json({ error });
