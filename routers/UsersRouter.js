@@ -2,12 +2,13 @@ const express = require("express");
 const router = express.Router();
 
 const UsersController = require("../controllers/UsersController");
-const ExercisesController = require("../controllers/ExercisesController");
 
 router.get("/", UsersController.getUsers);
 
 router.post("/", UsersController.addUser);
 
-router.post("/:_id/exercises", ExercisesController.addExercise);
+router.post("/:_id/exercises", UsersController.addExercise);
+
+router.get("/:_id/logs", UsersController.getExerciseLogs);
 
 module.exports = router;
