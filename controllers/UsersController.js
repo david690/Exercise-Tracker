@@ -1,15 +1,20 @@
 const User = require("../models/UsersModel");
 
-exports.getUsers = async (req, res) => {
+exports.getUsers = (req, res) => {
   User.find().then(data => {
-    res.json({ data });
+    let result = [];
+
+    for (let value in data) {
+      result.push({ username: data[value].username, _id: data[value]._id });
+    }
+    res.json(result);
   }).catch(error => {
     console.log("error:", error);
     res.json({ error });
   });
 }
 
-exports.addUser = async (req, res) => {
+exports.addUser = (req, res) => {
   const newUser = new User({ username: req.body.username });
 
   newUser.save().then(data => {
@@ -18,5 +23,4 @@ exports.addUser = async (req, res) => {
     console.log("error:", error);
     res.json({ error });
   });
-
 }
