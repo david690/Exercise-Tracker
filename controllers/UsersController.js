@@ -1,9 +1,12 @@
-const uuid = require("uuid");
-
-let usersArray = [];
+const User = require("../models/UsersModel");
 
 exports.addUser = async (req, res) => {
+  const newUser = new User({ username: req.body.username });
 
-  usersArray.push({ "username": req.body.username, "_id": uuid.v4() });
-  res.send({ "username": req.body.username, "_id": uuid.v4() });
+  newUser.save().then(data => {
+    return res.json({username: data.username, _id: data._id});
+  }).catch(error => {
+    console.log("error:", error);
+  });
+
 }
